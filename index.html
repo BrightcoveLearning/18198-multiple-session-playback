@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Brightcove Player Sample: Multiple Session Playback</title>
+</head>
+
+<body>
+  <video id="myPlayerID"
+    data-video-id="5141730843001"
+    data-account="1752604059001"
+    data-player="default"
+    data-embed="default"
+    data-application-id
+    class="video-js"
+    controls
+    width="640"
+    height="360"></video>
+  <script src="//players.brightcove.net/1752604059001/default_default/index.min.js"></script>
+
+  <p>video start cookie value = <span id="cookieDisplay1"></span></p>
+  <p>current cookie value = <span id="cookieDisplay2"></span></p>
+
+  <!-- custom script -->
+  <script type="text/javascript">
+    videojs("myPlayerID").ready(function () {
+      // Function to read the browser cookie
+      var read_cookie = function (key) {
+          var result;
+          return (result = new RegExp('(^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? result[2] : null;
+      }
+
+      // Initialize variables and read the browser cookie associate with Brightcove video views
+    var myPlayer = this,
+        videoStart = 0,
+        currentPosition,
+        cookie = read_cookie("BC_position");
+
+    if(cookie != null){
+          videoStart = cookie;
+      } else {
+          videoStart = 0;
+      }
+
+      myPlayer.on("loadedmetadata", function () {
+      if (cookie > 0) {
+              myPlayer.currentTime(parseInt(cookie));
+              myPlayer.play();
+          }
+      })
+      document.getElementById("cookieDisplay1").innerHTML = videoStart;
+
+      myPlayer.on("timeupdate", function() {
+          currentPosition = myPlayer.currentTime();
+      if (Math.round(currentPosition) != videoStart) {
+              videoStart = Math.round(currentPosition);
+              document.cookie="BC_position=" + escape(videoStart) + ";";
+              document.getElementById("cookieDisplay2").innerHTML = read_cookie("BC_position");
+          }
+      });
+
+      myPlayer.on("ended", function () {
+          videoStart = 0;
+          document.cookie="BC_position=;expires=0;";
+      })
+
+    });
+  </script>
+
+</body>
+</html>
